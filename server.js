@@ -93,6 +93,36 @@ router.route('/testcollection')
         res.json(o);
     }
     );
+
+    router.route('/movies')
+    .get((req, res) => {
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "GET movies";
+        res.json(o);
+    })
+    .post((req, res) => {
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "movie saved";
+        res.json(o);
+    })
+    .put(authJwtController.isAuthenticated, (req, res) => {
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "movie updated";
+        res.json(o);
+    })
+    .delete(authController.isAuthenticated, (req, res) => {
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "movie deleted";
+        res.json(o);
+    })
+    .all((req, res) => {
+        res.status(405).send({message: 'HTTP method not supported.'});
+    });
+
     
 app.use('/', router);
 app.listen(process.env.PORT || 8080);
