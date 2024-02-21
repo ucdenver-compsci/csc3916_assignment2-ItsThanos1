@@ -23,6 +23,21 @@ app.use(passport.initialize());
 
 var router = express.Router();
 
+function isAuthenticatedBasic(req, res, next) {
+    var user = basicAuth(req);
+    if (!user || !user.name || !user.pass) {
+        return res.status(401).json({ success: false, message: 'Authentication failed. Missing credentials.' });
+    } else {
+        // Here you should verify the username and password against your stored credentials
+        if (user.name === 'admin' && user.pass === 'password') { // Example credentials
+            next();
+        } else {
+            return res.status(401).json({ success: false, message: 'Authentication failed. Credentials incorrect.' });
+        }
+    }
+}
+
+
 function getJSONObjectForMovieRequirement(req) {
     var json = {
         headers: "No headers",
@@ -113,7 +128,7 @@ router.route('/testcollection')
         o.message = "movie updated";
         res.json(o);
     })
-    .delete(authController.isAuthenticated, (req, res) => {
+    .delete(isAuthenticatedBasic, (req, res) => { 
         var o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
         o.message = "movie deleted";
