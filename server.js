@@ -28,9 +28,12 @@ function isAuthenticatedBasic(req, res, next) {
     if (!user || !user.name || !user.pass) {
         return res.status(401).json({ success: false, message: 'Authentication failed. Missing credentials.' });
     } else {
-        // Here you should verify the username and password against your stored credentials
-        if (user.name === 'admin' && user.pass === 'password') { // Example credentials
-            next();
+        
+        var storedUser = db.findOne(user.name); //added this line 
+
+        
+        if (storedUser && storedUser.password === user.pass) {
+            next(); 
         } else {
             return res.status(401).json({ success: false, message: 'Authentication failed. Credentials incorrect.' });
         }
