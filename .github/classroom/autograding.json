@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Test Movies",
+      "setup": "npm install",
+      "run": "env SECRET_KEY=abc npm test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": null
+    }
+  ]
+}
