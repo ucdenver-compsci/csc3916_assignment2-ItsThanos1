@@ -141,8 +141,8 @@ router.route('/testcollection')
         o.query = req.query;
         res.json(o);
     });
-    
-    app.use('*', (req, res) => {
+
+    router.use('*', (req, res) => {
         res.status(405).send({ message: 'HTTP method not supported.' });
     });
 
