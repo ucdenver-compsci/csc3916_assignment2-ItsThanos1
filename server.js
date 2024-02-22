@@ -119,7 +119,7 @@ router.route('/testcollection')
     .get((req, res) => {
         var o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
-        o.message = "Movies Displayed";
+        o.message = "GET movies";
         o.query = req.query;
         o.movies = db.movies;
         res.json(o);
@@ -133,7 +133,7 @@ router.route('/testcollection')
         db.movies.push(newMovie); 
         var o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
-        o.message = "Movie Saved";
+        o.message = "movie saved";
         o.query = req.query;
         res.json(o);
     })
