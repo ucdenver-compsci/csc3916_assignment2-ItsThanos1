@@ -23,6 +23,8 @@ app.use(passport.initialize());
 
 var router = express.Router();
 
+db.movies = [];
+
 function isAuthenticatedBasic(req, res, next) {
     var user = basicAuth(req);
     if (!user || !user.name || !user.pass) {
@@ -118,9 +120,16 @@ router.route('/testcollection')
         o.status = 200;
         o.message = "Movies Displayed";
         o.query = req.query;
+        o.movies = db.movies;
         res.json(o);
     })
     .post((req, res) => {
+        var newMovie = {
+            title: req.body.title,
+            year: req.body.year
+            
+        };
+        db.movies.push(newMovie); 
         var o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
         o.message = "Movie Saved";
@@ -128,18 +137,31 @@ router.route('/testcollection')
         res.json(o);
     })
     .put(authJwtController.isAuthenticated, (req, res) => {
-        var o = getJSONObjectForMovieRequirement(req);
-        o.status = 200;
-        o.message = "Movie Updated";
-        o.query = req.query;
-        res.json(o);
+        const movieIndex = db.movies.findIndex(movie => movie.title === req.body.title);
+        if (movieIndex !== -1) {
+            // Update the movie
+            db.movies[movieIndex].year = req.body.year;
+            var o = getJSONObjectForMovieRequirement(req);
+            o.status = 200;
+            o.message = "Movie Updated";
+            o.query = req.query;
+            res.json(o);
+        } else {
+            res.status(404).json({ success: false, message: 'Movie not found.' });
+        }
     })
     .delete(isAuthenticatedBasic, (req, res) => { 
-        var o = getJSONObjectForMovieRequirement(req);
-        o.status = 200;
-        o.message = "Movie Deleted";
-        o.query = req.query;
-        res.json(o);
+        const movieIndex = db.movies.findIndex(movie => movie.title === req.body.title);
+        if (movieIndex !== -1) {
+            db.movies.splice(movieIndex, 1);
+            var o = getJSONObjectForMovieRequirement(req);
+            o.status = 200;
+            o.message = "Movie Deleted";
+            o.query = req.query;
+            res.json(o);
+        } else {
+            res.status(404).json({ success: false, message: 'Movie not found.' });
+        }
     });
 
     router.use('*', (req, res) => {
