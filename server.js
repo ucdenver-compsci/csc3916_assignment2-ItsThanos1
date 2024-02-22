@@ -151,7 +151,8 @@ router.route('/testcollection')
         }
     })
     .delete(isAuthenticatedBasic, (req, res) => { 
-        const movieIndex = db.movies.findIndex(movie => movie.title === req.body.title);
+        const movieTitleToDelete = req.body.title;
+        const movieIndex = db.movies.findIndex(movie => movie.title === movieTitleToDelete);
         if (movieIndex !== -1) {
             db.movies.splice(movieIndex, 1);
             var o = getJSONObjectForMovieRequirement(req);
