@@ -158,7 +158,7 @@ router.route('/testcollection')
             db.movies.splice(movieIndex, 1);
             var o = getJSONObjectForMovieRequirement(req);
             o.status = 200;
-            o.message = "Movie Deleted";
+            o.message = "movie deleted";
             o.query = req.query;
             res.json(o);
         } else {
