@@ -140,7 +140,8 @@ router.route('/testcollection')
         o.message = "Movie Deleted";
         o.query = req.query;
         res.json(o);
-    })
+    });
+    
     app.use('*', (req, res) => {
         res.status(405).send({ message: 'HTTP method not supported.' });
     });
