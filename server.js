@@ -13,6 +13,7 @@ var authJwtController = require('./auth_jwt');
 db = require('./db')(); //hack
 var jwt = require('jsonwebtoken');
 var cors = require('cors');
+var basicAuth = require('basic-auth');
 
 var app = express();
 app.use(cors());
