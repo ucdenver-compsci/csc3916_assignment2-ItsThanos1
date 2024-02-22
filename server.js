@@ -32,16 +32,16 @@ function isAuthenticatedBasic(req, res, next) {
         return res.status(401).json({ success: false, message: 'Authentication failed. Missing credentials.' });
     } else {
         
-        var storedUser = db.findOne(user.name); //added this line 
+        var storedUser = db.find(u => u.username === user.name);
 
-        
         if (storedUser && storedUser.password === user.pass) {
-            next(); 
+            next();
         } else {
             return res.status(401).json({ success: false, message: 'Authentication failed. Credentials incorrect.' });
         }
     }
 }
+
 
 
 function getJSONObjectForMovieRequirement(req) {
