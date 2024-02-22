@@ -144,7 +144,7 @@ router.route('/testcollection')
             db.movies[movieIndex].year = req.body.year;
             var o = getJSONObjectForMovieRequirement(req);
             o.status = 200;
-            o.message = "Movie Updated";
+            o.message = "movie updated";
             o.query = req.query;
             res.json(o);
         } else {
