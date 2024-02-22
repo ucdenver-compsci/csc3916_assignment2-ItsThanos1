@@ -116,29 +116,33 @@ router.route('/testcollection')
     .get((req, res) => {
         var o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
-        o.message = "GET movies";
+        o.message = "Movies Displayed";
+        o.query = req.query;
         res.json(o);
     })
     .post((req, res) => {
         var o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
-        o.message = "movie saved";
+        o.message = "Movie Saved";
+        o.query = req.query;
         res.json(o);
     })
     .put(authJwtController.isAuthenticated, (req, res) => {
         var o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
-        o.message = "movie updated";
+        o.message = "Movie Updated";
+        o.query = req.query;
         res.json(o);
     })
     .delete(isAuthenticatedBasic, (req, res) => { 
         var o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
-        o.message = "movie deleted";
+        o.message = "Movie Deleted";
+        o.query = req.query;
         res.json(o);
     })
-    .all((req, res) => {
-        res.status(405).send({message: 'HTTP method not supported.'});
+    app.use('*', (req, res) => {
+        res.status(405).send({ message: 'HTTP method not supported.' });
     });
 
     
