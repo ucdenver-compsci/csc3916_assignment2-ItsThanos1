@@ -32,16 +32,16 @@ function isAuthenticatedBasic(req, res, next) {
         return res.status(401).json({ success: false, message: 'Authentication failed. Missing credentials.' });
     } else {
         
-        var storedUser = db.find(u => u.username === user.name);
+        var storedUser = db.findOne(user.name); //added this line 
 
+        
         if (storedUser && storedUser.password === user.pass) {
-            next();
+            next(); 
         } else {
             return res.status(401).json({ success: false, message: 'Authentication failed. Credentials incorrect.' });
         }
     }
 }
-
 
 
 function getJSONObjectForMovieRequirement(req) {
@@ -151,7 +151,7 @@ router.route('/testcollection')
             res.status(404).json({ success: false, message: 'Movie not found.' });
         }
     })
-    .delete(isAuthenticatedBasic, (req, res) => { 
+     .delete(isAuthenticatedBasic, (req, res) => { 
         const movieTitleToDelete = req.body.title;
         const movieIndex = db.movies.findIndex(movie => movie.title === movieTitleToDelete);
         if (movieIndex !== -1) {
