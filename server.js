@@ -151,7 +151,7 @@ router.route('/testcollection')
             res.status(404).json({ success: false, message: 'Movie not found.' });
         }
     })
-     .delete(isAuthenticatedBasic, (req, res) => { 
+    .delete(isAuthenticatedBasic, (req, res) => { 
         const movieTitleToDelete = req.body.title;
         const movieIndex = db.movies.findIndex(movie => movie.title === movieTitleToDelete);
         if (movieIndex !== -1) {
