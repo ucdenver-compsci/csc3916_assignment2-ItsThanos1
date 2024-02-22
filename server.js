@@ -159,6 +159,7 @@ router.route('/testcollection')
             var o = getJSONObjectForMovieRequirement(req);
             o.status = 200;
             o.message = "movie deleted";
+            o.query = req.query;
             res.json(o);
         } else {
             res.status(404).json({ success: false, message: 'Movie not found.' });
