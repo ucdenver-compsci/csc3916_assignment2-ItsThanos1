@@ -135,13 +135,9 @@ router.route('/testcollection')
 
     router.route('/movies')
     .get((req, res) => {
-        Movie.find({}, (err, movies) => {
-            if (err) {
-                res.status(500).json({success: false, message: "Error fetching movies."});
-            } else {
-                res.json({success: true, message: "GET movies", movies: movies});
-            }
-        });
+        Movie.find({})
+            .then(movies => res.json({success: true, message: "GET movies", movies: movies}))
+            .catch(err => res.status(500).json({success: false, message: "Error fetching movies.", error: err.message}));
     })
     .post((req, res) => {
         var newMovie = new Movie({
@@ -151,35 +147,31 @@ router.route('/testcollection')
             actors: req.body.actors
         });
     
-        newMovie.save((err, movie) => {
-            if (err) {
-                res.status(500).json({success: false, message: "Error saving movie.", error: err.message});
-            } else {
-                res.json({success: true, message: "Movie saved successfully.", movie: movie});
-            }
-        });
+        newMovie.save()
+            .then(movie => res.json({success: true, message: "Movie saved successfully.", movie: movie}))
+            .catch(err => res.status(500).json({success: false, message: "Error saving movie.", error: err.message}));
     })
     .put(authJwtController.isAuthenticated, (req, res) => {
-        Movie.findOneAndUpdate({ title: req.body.title }, req.body, { new: true }, (err, movie) => {
-            if (err) {
-                res.status(500).json({success: false, message: "Error updating movie."});
-            } else if (!movie) {
-                res.status(404).json({success: false, message: "Movie not found."});
-            } else {
-                res.json({success: true, message: "Movie updated", movie: movie});
-            }
-        });
+        Movie.findOneAndUpdate({ title: req.body.title }, req.body, { new: true })
+            .then(movie => {
+                if (!movie) {
+                    res.status(404).json({success: false, message: "Movie not found."});
+                } else {
+                    res.json({success: true, message: "Movie updated", movie: movie});
+                }
+            })
+            .catch(err => res.status(500).json({success: false, message: "Error updating movie.", error: err.message}));
     })
     .delete(isAuthenticatedBasic, (req, res) => {
-        Movie.findOneAndDelete({ title: req.body.title }, (err, movie) => {
-            if (err) {
-                res.status(500).json({success: false, message: "Error deleting movie."});
-            } else if (!movie) {
-                res.status(404).json({success: false, message: "Movie not found."});
-            } else {
-                res.json({success: true, message: "Movie deleted"});
-            }
-        });
+        Movie.findOneAndDelete({ title: req.body.title })
+            .then(movie => {
+                if (!movie) {
+                    res.status(404).json({success: false, message: "Movie not found."});
+                } else {
+                    res.json({success: true, message: "Movie deleted"});
+                }
+            })
+            .catch(err => res.status(500).json({success: false, message: "Error deleting movie.", error: err.message}));
     });
 
 
