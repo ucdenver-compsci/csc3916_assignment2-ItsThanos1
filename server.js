@@ -18,11 +18,6 @@ var cors = require('cors');
 var basicAuth = require('basic-auth');
 
 var app = express();
-const corsOptions = {
-    origin: 'http://localhost:3090', // This should match the domain of your frontend app
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-};
-app.use(cors(corsOptions));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -30,8 +25,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 
 var router = express.Router();
-app.use('/', router);
-app.listen(process.env.PORT || 8080);
+
 db.movies = [];
 
 function isAuthenticatedBasic(req, res, next) {
@@ -79,14 +73,14 @@ router.post('/signup', (req, res) => {
             password: req.body.password // Password hashing is handled in the User model
         });
 
-        newUser.save().then(() => {
+        newUser.save(function(err) {
+            if (err) {
+                return res.json({success: false, msg: 'Username already exists.'});
+            }
             res.json({success: true, msg: 'Successfully created new user.'});
-        }).catch(err => {
-            res.json({success: false, msg: 'Username already exists.', error: err.message});
         });
     }
 });
-
 
 
 router.post('/signin', (req, res) => {
