@@ -4,12 +4,10 @@ var bcrypt = require('bcrypt');
 
 mongoose.Promise = global.Promise;
 
-// Connect to MongoDB - Removed deprecated options
-try {
-    mongoose.connect(process.env.DB, () => console.log("connected"));
-}catch (error) {
-    console.log("could not connect:", error);
-}
+// Connect to MongoDB - Adjusted for promise handling
+mongoose.connect(process.env.DB)
+    .then(() => console.log("connected"))
+    .catch(error => console.log("could not connect", error));
 
 // User schema
 var UserSchema = new Schema({
@@ -21,18 +19,18 @@ var UserSchema = new Schema({
 UserSchema.pre('save', function(next) {
     var user = this;
 
-    // Hash the password
+    // Only hash the password if it has been modified (or is new)
     if (!user.isModified('password')) return next();
 
-    // bcrypt.hash's first argument is the data to hash, second is the salt to use.
-    // In this case, we're using the genSalt function to generate the salt.
+    // Generate a salt
     bcrypt.genSalt(10, function(err, salt) {
         if (err) return next(err);
 
+        // Hash the password using our new salt
         bcrypt.hash(user.password, salt, function(err, hash) {
             if (err) return next(err);
 
-            // Change the password to the hashed version
+            // Override the cleartext password with the hashed one
             user.password = hash;
             next();
         });
