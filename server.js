@@ -3,6 +3,8 @@ CSC3916 HW2
 File: Server.js
 Description: Web API scaffolding for Movie API
  */
+var Movie = require('./Movies'); //imported movies and users
+var User = require('./User'); 
 
 var express = require('express');
 var http = require('http');
@@ -64,34 +66,46 @@ function getJSONObjectForMovieRequirement(req) {
 
 router.post('/signup', (req, res) => {
     if (!req.body.username || !req.body.password) {
-        res.json({success: false, msg: 'Please include both username and password to signup.'})
+        res.json({success: false, msg: 'Please include both username and password to signup.'});
     } else {
-        var newUser = {
+        var newUser = new User({
             username: req.body.username,
-            password: req.body.password
-        };
+            password: req.body.password // Password hashing is handled in the User model
+        });
 
-        db.save(newUser); //no duplicate checking
-        res.json({success: true, msg: 'Successfully created new user.'})
+        newUser.save(function(err) {
+            if (err) {
+                return res.json({success: false, msg: 'Username already exists.'});
+            }
+            res.json({success: true, msg: 'Successfully created new user.'});
+        });
     }
 });
+
 
 router.post('/signin', (req, res) => {
-    var user = db.findOne(req.body.username);
+    User.findOne({
+        username: req.body.username
+    }).select('password').exec(function(err, user) {
+        if (err) throw err;
 
-    if (!user) {
-        res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
-    } else {
-        if (req.body.password == user.password) {
-            var userToken = { id: user.id, username: user.username };
-            var token = jwt.sign(userToken, process.env.SECRET_KEY);
-            res.json ({success: true, token: 'JWT ' + token});
+        if (!user) {
+            res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
+        } else {
+            // Check if password matches
+            user.comparePassword(req.body.password, function(isMatch) {
+                if (isMatch) {
+                    var userToken = {id: user._id, username: user.username};
+                    var token = jwt.sign(userToken, process.env.SECRET_KEY);
+                    res.json({success: true, token: 'JWT ' + token});
+                } else {
+                    res.status(401).send({success: false, msg: 'Authentication failed.'});
+                }
+            });
         }
-        else {
-            res.status(401).send({success: false, msg: 'Authentication failed.'});
-        }
-    }
+    });
 });
+
 
 router.route('/testcollection')
     .delete(authController.isAuthenticated, (req, res) => {
@@ -117,54 +131,53 @@ router.route('/testcollection')
 
     router.route('/movies')
     .get((req, res) => {
-        var o = getJSONObjectForMovieRequirement(req);
-        o.status = 200;
-        o.message = "GET movies";
-        o.query = req.query;
-        o.movies = db.movies;
-        res.json(o);
+        Movie.find({}, (err, movies) => {
+            if (err) {
+                res.status(500).json({success: false, message: "Error fetching movies."});
+            } else {
+                res.json({success: true, message: "GET movies", movies: movies});
+            }
+        });
     })
     .post((req, res) => {
-        var newMovie = {
+        var newMovie = new Movie({
             title: req.body.title,
-            year: req.body.year
-            
-        };
-        db.movies.push(newMovie); 
-        var o = getJSONObjectForMovieRequirement(req);
-        o.status = 200;
-        o.message = "movie saved";
-        o.query = req.query;
-        res.json(o);
+            releaseDate: req.body.releaseDate,
+            genre: req.body.genre,
+            actors: req.body.actors
+        });
+    
+        newMovie.save((err, movie) => {
+            if (err) {
+                res.status(500).json({success: false, message: "Error saving movie.", error: err.message});
+            } else {
+                res.json({success: true, message: "Movie saved successfully.", movie: movie});
+            }
+        });
     })
     .put(authJwtController.isAuthenticated, (req, res) => {
-        const movieIndex = db.movies.findIndex(movie => movie.title === req.body.title);
-        if (movieIndex !== -1) {
-            // Update the movie
-            db.movies[movieIndex].year = req.body.year;
-            var o = getJSONObjectForMovieRequirement(req);
-            o.status = 200;
-            o.message = "movie updated";
-            o.query = req.query;
-            res.json(o);
-        } else {
-            res.status(404).json({ success: false, message: 'Movie not found.' });
-        }
+        Movie.findOneAndUpdate({ title: req.body.title }, req.body, { new: true }, (err, movie) => {
+            if (err) {
+                res.status(500).json({success: false, message: "Error updating movie."});
+            } else if (!movie) {
+                res.status(404).json({success: false, message: "Movie not found."});
+            } else {
+                res.json({success: true, message: "Movie updated", movie: movie});
+            }
+        });
     })
-    .delete(isAuthenticatedBasic, (req, res) => { 
-        const movieTitleToDelete = req.body.title;
-        const movieIndex = db.movies.findIndex(movie => movie.title === movieTitleToDelete);
-        if (movieIndex !== -1) {
-            db.movies.splice(movieIndex, 1);
-            var o = getJSONObjectForMovieRequirement(req);
-            o.status = 200;
-            o.message = "movie deleted";
-            o.query = req.query;
-            res.json(o);
-        } else {
-            res.status(404).json({ success: false, message: 'Movie not found.' });
-        }
+    .delete(isAuthenticatedBasic, (req, res) => {
+        Movie.findOneAndDelete({ title: req.body.title }, (err, movie) => {
+            if (err) {
+                res.status(500).json({success: false, message: "Error deleting movie."});
+            } else if (!movie) {
+                res.status(404).json({success: false, message: "Movie not found."});
+            } else {
+                res.json({success: true, message: "Movie deleted"});
+            }
+        });
     });
+
 
     router.use('*', (req, res) => {
         res.status(405).send({ message: 'HTTP method not supported.' });
