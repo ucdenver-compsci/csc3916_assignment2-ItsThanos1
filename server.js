@@ -26,7 +26,7 @@ app.use(passport.initialize());
 
 var router = express.Router();
 
-db.movies = [];
+
 
 function isAuthenticatedBasic(req, res, next) {
     var user = basicAuth(req);
@@ -73,14 +73,14 @@ router.post('/signup', (req, res) => {
             password: req.body.password // Password hashing is handled in the User model
         });
 
-        newUser.save(function(err) {
-            if (err) {
-                return res.json({success: false, msg: 'Username already exists.'});
-            }
+        newUser.save().then(() => {
             res.json({success: true, msg: 'Successfully created new user.'});
+        }).catch(err => {
+            res.json({success: false, msg: 'Username already exists.', error: err.message});
         });
     }
 });
+
 
 
 router.post('/signin', (req, res) => {
