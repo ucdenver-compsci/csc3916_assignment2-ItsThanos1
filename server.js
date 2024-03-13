@@ -4,7 +4,7 @@ File: Server.js
 Description: Web API scaffolding for Movie API
  */
 var Movie = require('./Movies'); //imported movies and users
-var User = require('./User'); 
+var User = require('C:\Users\aleja\OneDrive\Desktop\WEV_API_2\csc3916_assignment2-ItsThanos1\Users.js'); 
 
 var express = require('express');
 var http = require('http');
