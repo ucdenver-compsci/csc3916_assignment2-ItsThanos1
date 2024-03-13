@@ -84,27 +84,31 @@ router.post('/signup', (req, res) => {
 
 
 router.post('/signin', (req, res) => {
-    User.findOne({
-        username: req.body.username
-    }).select('password').exec(function(err, user) {
-        if (err) throw err;
-
-        if (!user) {
-            res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
-        } else {
+    User.findOne({ username: req.body.username })
+        .select('password')
+        .then(user => {
+            if (!user) {
+                return res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
+            }
             // Check if password matches
-            user.comparePassword(req.body.password, function(isMatch) {
+            user.comparePassword(req.body.password, (err, isMatch) => {
+                if (err) {
+                    return res.status(500).send({success: false, msg: 'Error comparing passwords.'});
+                }
                 if (isMatch) {
-                    var userToken = {id: user._id, username: user.username};
+                    var userToken = { id: user._id, username: user.username };
                     var token = jwt.sign(userToken, process.env.SECRET_KEY);
-                    res.json({success: true, token: 'JWT ' + token});
+                    res.json({ success: true, token: 'JWT ' + token });
                 } else {
-                    res.status(401).send({success: false, msg: 'Authentication failed.'});
+                    res.status(401).send({ success: false, msg: 'Authentication failed.' });
                 }
             });
-        }
-    });
+        })
+        .catch(err => {
+            res.status(500).send({success: false, msg: 'Authentication failed.', error: err.message});
+        });
 });
+
 
 
 router.route('/testcollection')
