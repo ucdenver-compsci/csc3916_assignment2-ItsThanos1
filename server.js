@@ -28,30 +28,6 @@ var router = express.Router();
 
 
 
-function isAuthenticatedBasic(req, res, next) {
-    var userCredentials = basicAuth(req);
-    if (!userCredentials || !userCredentials.name || !userCredentials.pass) {
-        return res.status(401).json({ success: false, message: 'Authentication failed. Missing credentials.' });
-    } else {
-        User.findOne({ username: userCredentials.name })
-            .then(user => {
-                if (!user) {
-                    return res.status(401).json({ success: false, message: 'Authentication failed. User not found.' });
-                }
-                // Here we assume you have a method in your User model to compare passwords
-                user.comparePassword(userCredentials.pass, function(err, isMatch) {
-                    if (isMatch && !err) {
-                        next();
-                    } else {
-                        return res.status(401).json({ success: false, message: 'Authentication failed. Wrong password.' });
-                    }
-                });
-            })
-            .catch(err => {
-                res.status(500).json({ success: false, message: 'Authentication failed.', error: err });
-            });
-    }
-}
 
 
 
