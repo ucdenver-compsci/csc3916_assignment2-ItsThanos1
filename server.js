@@ -171,7 +171,7 @@ router.route('/testcollection')
             })
             .catch(err => res.status(500).json({success: false, message: "Error updating movie.", error: err.message}));
     })
-    .delete(isAuthenticatedBasic, (req, res) => {
+    .delete(authController.isAuthenticated, (req, res) => {
         Movie.findOneAndDelete({ title: req.body.title })
             .then(movie => {
                 if (!movie) {

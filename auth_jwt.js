@@ -8,7 +8,7 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme("jwt");
 opts.secretOrKey = process.env.SECRET_KEY;
 
 passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-    console.log("JWT Payload received:", jwt_payload);
+    
 
     // Changed to use Promises instead of callback
     User.findById(jwt_payload.id).then(user => {
