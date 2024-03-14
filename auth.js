@@ -1,18 +1,27 @@
 var passport = require('passport');
 var BasicStrategy = require('passport-http').BasicStrategy;
+var User = require('./Users');
 
-passport.use(new BasicStrategy(
-   function(username, password, done) {
-       var user = { name: "cu_user"}; //could have called to a database to look this up
-       if (username === user.name && password === "cu_rulez") // tripple equal is type and value; double == is just equal
-       {
-           return done(null, user);
-       }
-       else
-       {
-           return done(null, false);
-       }
-   }
-));
+passport.use(new BasicStrategy(function(username, password, done) {
+    User.findOne({ username: username }, function(err, user) {
+        if (err) {
+            return done(err);
+        }
+        if (!user) {
+            return done(null, false, { message: 'Incorrect username.' });
+        }
+        // Assuming your User model has a comparePassword method
+        user.comparePassword(password, function(err, isMatch) {
+            if (err) {
+                return done(err);
+            }
+            if (!isMatch) {
+                return done(null, false, { message: 'Incorrect password.' });
+            }
+            return done(null, user);
+        });
+    });
+}));
+
 
 exports.isAuthenticated = passport.authenticate('basic', { session: false });
