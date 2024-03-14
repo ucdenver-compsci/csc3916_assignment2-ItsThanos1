@@ -9,19 +9,21 @@ opts.secretOrKey = process.env.SECRET_KEY;
 
 passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
     console.log("JWT Payload received:", jwt_payload);
-    User.findById(jwt_payload.id, function(err, user) {
-        if (err) {
-            console.error("Error during user lookup:", err);
-            return done(err, false);
-        }
+
+    // Changed to use Promises instead of callback
+    User.findById(jwt_payload.id).then(user => {
         if (user) {
             console.log("User found:", user);
-            return done(null, user);
+            done(null, user);
         } else {
             console.log("No user found with ID from JWT payload:", jwt_payload.id);
-            return done(null, false);
+            done(null, false);
         }
+    }).catch(err => {
+        console.error("Error during user lookup:", err);
+        done(err, false);
     });
 }));
+
 exports.isAuthenticated = passport.authenticate('jwt', { session : false });
 exports.secret = opts.secretOrKey ;
