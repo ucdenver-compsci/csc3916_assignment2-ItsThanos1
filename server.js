@@ -29,21 +29,30 @@ var router = express.Router();
 
 
 function isAuthenticatedBasic(req, res, next) {
-    var user = basicAuth(req);
-    if (!user || !user.name || !user.pass) {
+    var userCredentials = basicAuth(req);
+    if (!userCredentials || !userCredentials.name || !userCredentials.pass) {
         return res.status(401).json({ success: false, message: 'Authentication failed. Missing credentials.' });
     } else {
-        
-        var storedUser = db.findOne(user.name); //added this line 
-
-        
-        if (storedUser && storedUser.password === user.pass) {
-            next(); 
-        } else {
-            return res.status(401).json({ success: false, message: 'Authentication failed. Credentials incorrect.' });
-        }
+        User.findOne({ username: userCredentials.name })
+            .then(user => {
+                if (!user) {
+                    return res.status(401).json({ success: false, message: 'Authentication failed. User not found.' });
+                }
+                // Here we assume you have a method in your User model to compare passwords
+                user.comparePassword(userCredentials.pass, function(err, isMatch) {
+                    if (isMatch && !err) {
+                        next();
+                    } else {
+                        return res.status(401).json({ success: false, message: 'Authentication failed. Wrong password.' });
+                    }
+                });
+            })
+            .catch(err => {
+                res.status(500).json({ success: false, message: 'Authentication failed.', error: err });
+            });
     }
 }
+
 
 
 function getJSONObjectForMovieRequirement(req) {
