@@ -10,7 +10,7 @@ passport.use(new BasicStrategy(
                 return done(null, false, { message: 'Incorrect username.' });
             }
  
-            // Assuming your User model has a method to compare passwords
+            // Now using `await` with `comparePassword`
             const isMatch = await user.comparePassword(password);
             if (!isMatch) {
                 return done(null, false, { message: 'Incorrect password.' });
