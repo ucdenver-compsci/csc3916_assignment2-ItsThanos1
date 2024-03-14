@@ -92,31 +92,32 @@ router.post('/signup', (req, res) => {
 
 
 
-router.post('/signin', (req, res) => {
-    User.findOne({ username: req.body.username })
-        .select('password')
-        .then(user => {
-            if (!user) {
-                return res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
-            }
-            // Check if password matches
-            user.comparePassword(req.body.password, (err, isMatch) => {
-                if (err) {
-                    return res.status(500).send({success: false, msg: 'Error comparing passwords.'});
-                }
-                if (isMatch) {
-                    var userToken = { id: user._id, username: user.username };
-                    var token = jwt.sign(userToken, process.env.SECRET_KEY);
-                    res.json({ success: true, token: 'JWT ' + token });
-                } else {
-                    res.status(401).send({ success: false, msg: 'Authentication failed.' });
-                }
-            });
-        })
-        .catch(err => {
-            res.status(500).send({success: false, msg: 'Authentication failed.', error: err.message});
-        });
+router.post('/signin', async (req, res) => {
+    console.log("Signin route hit with username:", req.body.username);
+    try {
+        const user = await User.findOne({ username: req.body.username }).exec();
+        if (!user) {
+            console.log("User not found:", req.body.username);
+            return res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
+        }
+
+        console.log("User found, comparing password for user:", req.body.username);
+        const isMatch = await user.comparePassword(req.body.password);
+        if (isMatch) {
+            console.log("Password matches for user:", req.body.username);
+            var userToken = { id: user._id, username: user.username };
+            var token = jwt.sign(userToken, process.env.SECRET_KEY);
+            res.json({ success: true, token: 'JWT ' + token });
+        } else {
+            console.log("Password does not match for user:", req.body.username);
+            res.status(401).send({ success: false, msg: 'Authentication failed.' });
+        }
+    } catch (err) {
+        console.error("Error in signin route:", err);
+        res.status(500).send({success: false, msg: 'Authentication failed.', error: err.message});
+    }
 });
+
 
 
 
