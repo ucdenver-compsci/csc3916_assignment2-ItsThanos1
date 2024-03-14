@@ -7,7 +7,7 @@ var opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme("jwt");
 opts.secretOrKey = process.env.SECRET_KEY;
 
-ppassport.use(new JwtStrategy(opts, function(jwt_payload, done) {
+passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
     console.log("JWT Payload received:", jwt_payload);
     User.findById(jwt_payload.id, function(err, user) {
         if (err) {
@@ -23,6 +23,5 @@ ppassport.use(new JwtStrategy(opts, function(jwt_payload, done) {
         }
     });
 }));
-
 exports.isAuthenticated = passport.authenticate('jwt', { session : false });
 exports.secret = opts.secretOrKey ;
