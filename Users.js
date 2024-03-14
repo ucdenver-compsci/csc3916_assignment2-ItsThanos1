@@ -38,6 +38,7 @@ UserSchema.pre('save', function(next) {
 });
 
 UserSchema.methods.comparePassword = function(candidatePassword) {
+    console.log("Hashed password from user model:", this.password); // Debugging line
     return new Promise((resolve, reject) => {
         bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
             if (err) reject(err);
@@ -45,6 +46,7 @@ UserSchema.methods.comparePassword = function(candidatePassword) {
         });
     });
 };
+
 
 
 // Return the model to server
