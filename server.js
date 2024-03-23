@@ -5,7 +5,7 @@ Description: Web API scaffolding for Movie API
  */
 var Movie = require('./Movies'); //imported movies and users
 var User = require('./Users'); 
-
+var Review = require('./Reviews');
 var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
@@ -94,7 +94,38 @@ router.post('/signin', async (req, res) => {
     }
 });
 
+router.route('/reviews')
+  .get((req, res) => {
+    Review.find({})
+      .then(reviews => res.json({success: true, message: "GET reviews", reviews: reviews}))
+      .catch(err => res.status(500).json({success: false, message: "Error fetching reviews.", error: err.message}));
+  })
+  .post(authJwtController.isAuthenticated, (req, res) => {
+    var newReview = new Review({
+      movieId: req.body.movieId,
+      username: req.body.username,
+      review: req.body.review,
+      rating: req.body.rating
+    });
 
+    newReview.save()
+      .then(review => res.json({success: true, message: "Review created!", review: review}))
+      .catch(err => res.status(500).json({success: false, message: "Error saving review.", error: err.message}));
+  });
+
+
+router.route('/reviews/:id')
+  .delete(authController.isAuthenticated, (req, res) => {
+    Review.findByIdAndDelete(req.params.id)
+      .then(review => {
+        if (!review) {
+          res.status(404).json({success: false, message: "Review not found."});
+        } else {
+          res.json({success: true, message: "Review deleted"});
+        }
+      })
+      .catch(err => res.status(500).json({success: false, message: "Error deleting review.", error: err.message}));
+  });
 
 
 router.route('/testcollection')
@@ -121,10 +152,29 @@ router.route('/testcollection')
 
     router.route('/movies')
     .get((req, res) => {
-        Movie.find({})
+        if (req.query.reviews === "true") {
+          Movie.aggregate([
+            {
+              $lookup: {
+                from: "reviews",
+                localField: "_id",
+                foreignField: "movieId",
+                as: "reviews"
+              }
+            }
+          ]).exec((err, movies) => {
+            if (err) {
+              res.status(500).json({success: false, message: "Error fetching movies with reviews.", error: err.message});
+            } else {
+              res.json({success: true, message: "GET movies with reviews", movies: movies});
+            }
+          });
+        } else {
+          Movie.find({})
             .then(movies => res.json({success: true, message: "GET movies", movies: movies}))
             .catch(err => res.status(500).json({success: false, message: "Error fetching movies.", error: err.message}));
-    })
+        }
+      })
     .post((req, res) => {
         var newMovie = new Movie({
             title: req.body.title,
