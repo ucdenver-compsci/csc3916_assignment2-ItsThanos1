@@ -115,7 +115,7 @@ router.route('/reviews')
 
 
 router.route('/reviews/:id')
-  .delete(authController.isAuthenticated, (req, res) => {
+  .delete(authJwtController.isAuthenticated, (req, res) => {
     Review.findByIdAndDelete(req.params.id)
       .then(review => {
         if (!review) {
