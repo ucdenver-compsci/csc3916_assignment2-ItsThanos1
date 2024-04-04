@@ -95,7 +95,7 @@ router.post('/signin', async (req, res) => {
 });
 
 router.route('/reviews')
-  .get((req, res) => {
+  .get(authJwtController.isAuthenticated, (req, res) => {
     Review.find({})
       .then(reviews => res.json({success: true, message: "GET reviews", reviews: reviews}))
       .catch(err => res.status(500).json({success: false, message: "Error fetching reviews.", error: err.message}));
@@ -151,7 +151,7 @@ router.route('/testcollection')
     );
 
     router.route('/movies')
-    .get((req, res) => {
+    .get(authJwtController.isAuthenticated, (req, res) => {
         if (req.query.reviews === "true") {
           Movie.aggregate([
             {
@@ -175,7 +175,7 @@ router.route('/testcollection')
             .catch(err => res.status(500).json({success: false, message: "Error fetching movies.", error: err.message}));
         }
       })
-    .post((req, res) => {
+    .post(authJwtController.isAuthenticated, (req, res) => {
         var newMovie = new Movie({
             title: req.body.title,
             releaseDate: req.body.releaseDate,
