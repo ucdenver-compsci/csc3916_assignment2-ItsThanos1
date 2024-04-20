@@ -101,16 +101,24 @@ router.route('/reviews')
       .catch(err => res.status(500).json({success: false, message: "Error fetching reviews.", error: err.message}));
   })
   .post(authJwtController.isAuthenticated, (req, res) => {
-    var newReview = new Review({
-      movieId: req.body.movieId,
-      username: req.body.username,
-      review: req.body.review,
-      rating: req.body.rating
-    });
+    Movie.findById(req.body.movieId)
+      .then(movie => {
+        if (!movie) {
+          return res.status(400).json({success: false, message: "Movie not found."});
+        }
+        
+        var newReview = new Review({
+          movieId: req.body.movieId,
+          username: req.body.username,
+          review: req.body.review,
+          rating: req.body.rating
+        });
 
-    newReview.save()
-      .then(review => res.json({success: true, message: "Review created!", review: review}))
-      .catch(err => res.status(500).json({success: false, message: "Error saving review.", error: err.message}));
+        newReview.save()
+          .then(review => res.json({success: true, message: "Review created!", review: review}))
+          .catch(err => res.status(500).json({success: false, message: "Error saving review.", error: err.message}));
+      })
+      .catch(err => res.status(500).json({success: false, message: "Error checking movie existence.", error: err.message}));
   });
 
 
