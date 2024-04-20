@@ -116,7 +116,7 @@ router.route('/reviews')
 
         newReview.save()
           .then(review => res.json({success: true, message: "Review created!", review: review}))
-          .catch(err => res.status(500).json({success: false, message: "Error saving review.", error: err.message}));
+          .catch(err => res.status(400).json({success: false, message: "Error saving review.", error: err.message}));
       })
       .catch(err => res.status(500).json({success: false, message: "Error checking movie existence.", error: err.message}));
   });
