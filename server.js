@@ -152,29 +152,34 @@ router.route('/testcollection')
 
     router.route('/movies')
     .get(authJwtController.isAuthenticated, (req, res) => {
-        if (req.query.reviews === "true") {
-          Movie.aggregate([
-            {
-              $lookup: {
-                from: "reviews",
-                localField: "_id",
-                foreignField: "movieId",
-                as: "reviews"
-              }
+      if (req.query.reviews === "true") {
+        Movie.aggregate([
+          {
+            $lookup: {
+              from: "reviews",
+              localField: "_id",
+              foreignField: "movieId",
+              as: "reviews"
             }
-          ]).exec((err, movies) => {
+          }
+        ]).exec((err, movies) => {
+          if (err) {
+            res.status(500).json({success: false, message: "Error fetching movies with reviews.", error: err.message});
+          } else {
+            res.json({success: true, message: "GET movies with reviews", movies: movies});
+          }
+        });
+      } else {
+        Movie.find({})
+          .exec((err, movies) => {
             if (err) {
-              res.status(500).json({success: false, message: "Error fetching movies with reviews.", error: err.message});
+              res.status(500).json({success: false, message: "Error fetching movies.", error: err.message});
             } else {
-              res.json({success: true, message: "GET movies with reviews", movies: movies});
+              res.json({success: true, message: "GET movies", movies: movies});
             }
           });
-        } else {
-          Movie.find({})
-            .then(movies => res.json({success: true, message: "GET movies", movies: movies}))
-            .catch(err => res.status(500).json({success: false, message: "Error fetching movies.", error: err.message}));
-        }
-      })
+      }
+    })
     .post(authJwtController.isAuthenticated, (req, res) => {
         var newMovie = new Movie({
             title: req.body.title,
