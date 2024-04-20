@@ -162,21 +162,21 @@ router.route('/testcollection')
               as: "reviews"
             }
           }
-        ]).exec((err, movies) => {
-          if (err) {
-            res.status(500).json({success: false, message: "Error fetching movies with reviews.", error: err.message});
-          } else {
+        ]).exec()
+          .then(movies => {
             res.json({success: true, message: "GET movies with reviews", movies: movies});
-          }
-        });
+          })
+          .catch(err => {
+            res.status(500).json({success: false, message: "Error fetching movies with reviews.", error: err.message});
+          });
       } else {
         Movie.find({})
-          .exec((err, movies) => {
-            if (err) {
-              res.status(500).json({success: false, message: "Error fetching movies.", error: err.message});
-            } else {
-              res.json({success: true, message: "GET movies", movies: movies});
-            }
+          .exec()
+          .then(movies => {
+            res.json({success: true, message: "GET movies", movies: movies});
+          })
+          .catch(err => {
+            res.status(500).json({success: false, message: "Error fetching movies.", error: err.message});
           });
       }
     })
