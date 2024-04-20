@@ -162,17 +162,22 @@ router.route('/testcollection')
               as: "reviews"
             }
           }
-        ]).exec()
-          .then(movies => {
-            res.json({success: true, message: "GET movies with reviews", movies: movies});
-          })
-          .catch(err => {
+        ]).exec((err, movies) => {
+          if (err) {
             res.status(500).json({success: false, message: "Error fetching movies with reviews.", error: err.message});
-          });
+          } else {
+            res.json({success: true, message: "GET movies with reviews", movies: movies});
+          }
+        });
       } else {
         Movie.find({})
-          .then(movies => res.json({success: true, message: "GET movies", movies: movies}))
-          .catch(err => res.status(500).json({success: false, message: "Error fetching movies.", error: err.message}));
+          .exec((err, movies) => {
+            if (err) {
+              res.status(500).json({success: false, message: "Error fetching movies.", error: err.message});
+            } else {
+              res.json({success: true, message: "GET movies", movies: movies});
+            }
+          });
       }
     })
     .post(authJwtController.isAuthenticated, (req, res) => {
